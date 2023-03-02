@@ -81,6 +81,9 @@ type Cluster struct {
 	// in the order listed.
 	// These should be YAML or JSON formatting RFC 6902 JSON patches
 	ContainerdConfigPatchesJSON6902 []string `yaml:"containerdConfigPatchesJSON6902,omitempty" json:"containerdConfigPatchesJSON6902,omitempty"`
+
+	// ExtraProviderArgs are extra arguments to be provided to the provider (e.g. docker run) for all nodes
+	ExtraProviderArgs []string `yaml:"extraProviderArgs,omitempty" json:"extraProviderArgs,omitempty"`
 }
 
 // TypeMeta partially copies apimachinery/pkg/apis/meta/v1.TypeMeta
@@ -145,6 +148,9 @@ type Node struct {
 	// The node-level patches will be applied after the cluster-level patches
 	// have been applied. (See Cluster.KubeadmConfigPatchesJSON6902)
 	KubeadmConfigPatchesJSON6902 []PatchJSON6902 `yaml:"kubeadmConfigPatchesJSON6902,omitempty" json:"kubeadmConfigPatchesJSON6902,omitempty"`
+
+	// ExtraProviderArgs are extra arguments to be provided to the provider (e.g. docker run) for just this node
+	ExtraProviderArgs []string `yaml:"extraProviderArgs,omitempty" json:"extraProviderArgs,omitempty"`
 }
 
 // NodeRole defines possible role for nodes in a Kubernetes cluster managed by `kind`

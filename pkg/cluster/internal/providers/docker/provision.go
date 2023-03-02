@@ -50,7 +50,7 @@ func planCreation(cfg *config.Cluster, networkName string) (createContainerFuncs
 	}
 
 	// these apply to all container creation
-	genericArgs, err := commonArgs(cfg.Name, cfg, networkName, names)
+	genericArgs, err := commonArgs(cfg.Name, cfg, networkName, names, cfg.ExtraProviderArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func planCreation(cfg *config.Cluster, networkName string) (createContainerFuncs
 						ContainerPort: common.APIServerInternalPort,
 					},
 				)
-				args, err := runArgsForNode(node, cfg.Networking.IPFamily, name, genericArgs)
+				args, err := runArgsForNode(node, cfg.Networking.IPFamily, name, node.ExtraProviderArgs, genericArgs)
 				if err != nil {
 					return err
 				}
@@ -116,7 +116,7 @@ func planCreation(cfg *config.Cluster, networkName string) (createContainerFuncs
 			})
 		case config.WorkerRole:
 			createContainerFuncs = append(createContainerFuncs, func() error {
-				args, err := runArgsForNode(node, cfg.Networking.IPFamily, name, genericArgs)
+				args, err := runArgsForNode(node, cfg.Networking.IPFamily, name, node.ExtraProviderArgs, genericArgs)
 				if err != nil {
 					return err
 				}
@@ -130,7 +130,7 @@ func planCreation(cfg *config.Cluster, networkName string) (createContainerFuncs
 }
 
 // commonArgs computes static arguments that apply to all containers
-func commonArgs(cluster string, cfg *config.Cluster, networkName string, nodeNames []string) ([]string, error) {
+func commonArgs(cluster string, cfg *config.Cluster, networkName string, nodeNames []string, extraArgs []string) ([]string, error) {
 	// standard arguments all nodes containers need, computed once
 	args := []string{
 		"--detach", // run the container detached
@@ -199,10 +199,14 @@ func commonArgs(cluster string, cfg *config.Cluster, networkName string, nodeNam
 	if mountFuse() {
 		args = append(args, "--device", "/dev/fuse")
 	}
+
+	// add any user-supplied args
+	args = append(args, extraArgs...)
+
 	return args, nil
 }
 
-func runArgsForNode(node *config.Node, clusterIPFamily config.ClusterIPFamily, name string, args []string) ([]string, error) {
+func runArgsForNode(node *config.Node, clusterIPFamily config.ClusterIPFamily, name string, extra []string, args []string) ([]string, error) {
 	args = append([]string{
 		"--hostname", name, // make hostname match container name
 		// label the node with the role ID
@@ -244,6 +248,9 @@ func runArgsForNode(node *config.Node, clusterIPFamily config.ClusterIPFamily, n
 	case config.ControlPlaneRole:
 		args = append(args, "-e", "KUBECONFIG=/etc/kubernetes/admin.conf")
 	}
+
+	// add any user-supplied args
+	args = append(args, extra...)
 
 	// finally, specify the image to run
 	return append(args, node.Image), nil

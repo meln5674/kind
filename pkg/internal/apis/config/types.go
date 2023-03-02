@@ -69,6 +69,9 @@ type Cluster struct {
 	// in the order listed.
 	// These should be YAML or JSON formatting RFC 6902 JSON patches
 	ContainerdConfigPatchesJSON6902 []string
+
+	// ExtraProviderArgs are extra arguments to be provided to the provider (e.g. docker run) for all nodes
+	ExtraProviderArgs []string `yaml:"extraProviderArgs,omitempty" json:"extraProviderArgs,omitempty"`
 }
 
 // Node contains settings for a node in the `kind` Cluster.
@@ -107,6 +110,9 @@ type Node struct {
 	// KubeadmConfigPatchesJSON6902 are applied to the generated kubeadm config
 	// as patchesJson6902 to `kustomize build`
 	KubeadmConfigPatchesJSON6902 []PatchJSON6902
+
+	// ExtraProviderArgs are extra arguments to be provided to the provider (e.g. docker run) for just this node
+	ExtraProviderArgs []string `yaml:"extraProviderArgs,omitempty" json:"extraProviderArgs,omitempty"`
 }
 
 // NodeRole defines possible role for nodes in a Kubernetes cluster managed by `kind`
